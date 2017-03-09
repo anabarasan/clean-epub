@@ -8,7 +8,6 @@ import sys
 
 # Third Party
 from lxml import etree
-from lxml.html import clean
 from bs4 import BeautifulSoup
 
 
@@ -52,7 +51,7 @@ class CleanEPub(object):
             self.clean(os.path.join(content_file_folder, pagefilename))
 
         self.create_epub()
-        # self.cleanup()
+        self.cleanup()
 
 
     def extract(self, epub_file):
@@ -66,14 +65,11 @@ class CleanEPub(object):
         with open(content_file, 'r') as source_file:
             original_content = source_file.read()
         soup = BeautifulSoup(original_content, "lxml")
-        result = str(soup)
-        strip = clean.Cleaner(meta=True,
-                              style=True,
-                              page_structure=True,
-                              remove_tags=['FONT', 'font', 'span'])
-        content = strip.clean_html(result)
+        for match in soup.findAll('span'):
+            match.unwrap()
+        modified_content = soup.prettify("utf-8")
         with open(content_file, 'w') as destination_file:
-            destination_file.write(content)
+            destination_file.write(modified_content)
 
     def create_epub(self):
         """Create a new epub file with the contents of workdir"""

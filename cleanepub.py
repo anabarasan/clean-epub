@@ -34,6 +34,7 @@ class CleanEPub(object):
         self.container = etree.parse(os.path.join(self.workdir, 'META-INF', 'container.xml'))
         contents_file = self.container.xpath('n:rootfiles/n:rootfile/@full-path',
                                              namespaces=self.NAMESPACES)[0]
+        content_file_folder = os.path.dirname(os.path.join(self.workdir, contents_file))
 
         # read the contenst file to get the pages reference
         self.contents = etree.parse(os.path.join(self.workdir, contents_file))
@@ -48,9 +49,10 @@ class CleanEPub(object):
                 "/pkg:package/pkg:manifest/pkg:item[@id='%s']/@href" % pageid,
                 namespaces=self.NAMESPACES)[0]
             self.pages.append(pagefilename)
+            self.clean(os.path.join(content_file_folder, pagefilename))
 
         self.create_epub()
-        self.cleanup()
+        # self.cleanup()
 
 
     def extract(self, epub_file):
@@ -63,7 +65,7 @@ class CleanEPub(object):
         """Remove unwanted tags from the content pages"""
         with open(content_file, 'r') as source_file:
             original_content = source_file.read()
-        soup = BeautifulSoup(original_content)
+        soup = BeautifulSoup(original_content, "lxml")
         result = str(soup)
         strip = clean.Cleaner(meta=True,
                               style=True,

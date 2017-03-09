@@ -41,13 +41,11 @@ class CleanEPub(object):
                                     namespaces=self.NAMESPACES)
 
         # with pages reference get the list of pages
-        self.pages = []
         for page in pages:
             pageid = page.get('idref')
             pagefilename = self.contents.xpath(
                 "/pkg:package/pkg:manifest/pkg:item[@id='%s']/@href" % pageid,
                 namespaces=self.NAMESPACES)[0]
-            self.pages.append(pagefilename)
             self.clean(os.path.join(content_file_folder, pagefilename))
 
         self.create_epub()
@@ -61,7 +59,8 @@ class CleanEPub(object):
             source_file.extractall(self.workdir)
 
     def clean(self, content_file):
-        """Remove unwanted tags from the content pages"""
+        """Remove unwanted tags from the content pages
+        @param content_file the file which needs to cleaned"""
         with open(content_file, 'r') as source_file:
             original_content = source_file.read()
         soup = BeautifulSoup(original_content, "lxml")
@@ -75,9 +74,9 @@ class CleanEPub(object):
         """Create a new epub file with the contents of workdir"""
         with zipfile.ZipFile(self.workdir + '-clean.epub', 'w', zipfile.ZIP_DEFLATED) as clean_epub:
             for root, dirs, files in os.walk(self.workdir):
-                for file in files:
-                    clean_epub.write(os.path.join(root, file),
-                                     os.path.relpath(os.path.join(root, file),
+                for file_ in files:
+                    clean_epub.write(os.path.join(root, file_),
+                                     os.path.relpath(os.path.join(root, file_),
                                                      os.path.join(self.workdir, '.')))
 
     def cleanup(self):

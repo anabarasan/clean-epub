@@ -2,15 +2,25 @@
 
 # Standard Library
 from __future__ import print_function
-import zipfile
+import argparse
+import logging
 import os
 import shutil
 import sys
+import zipfile
 
 # Third Party
 from lxml import etree
 from bs4 import BeautifulSoup
 
+
+# Where terminal logging should go
+LOG_STREAM = sys.stderr
+
+# In this instance we don't want getLogger(__name__), since '__main__'
+# is not a very useful name in the log.
+SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
+logger = logging.getLogger(SCRIPT_NAME)
 
 class CleanEPub(object):
     """ CleanEPub """
@@ -85,11 +95,84 @@ class CleanEPub(object):
         shutil.rmtree(self.workdir)
 
 
+def parse_arguments(argv):
+    """ Standard argument parsing.
+
+    @param argv - sys.argv.
+    @return - tuple of parsed arguments to be unpacked
+    """
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawTextHelpFormatter)
+    # Required Arguments
+    required_args = parser.add_argument_group('required arguments')
+    parser.add_argument("--source", "-s",
+                        help="path to the input epub file which needs to be processed.",
+                        required=True)
+    parser.add_argument("--destination", "-d",
+                        help="path where to write the processed epub.",
+                        required=True)
+    # Optional Arguments
+    parser.add_argument("--batch", "-b",
+                        help="""batch mode.
+                        if specified, SOURCE and DESTINATION should be folder paths.""",
+                        action="store_true")
+    parser.add_argument("--verbose", "-v",
+                        help="Verbose mode.",
+                        action="store_true")
+
+    args = parser.parse_args(argv)
+
+    return args.source, args.destination, args.batch, args.verbose
+
+def setup_terminal_verbosity(verbose, log_stream):
+    """Make the terminal output appropriately verbose.
+
+    @param verbose is True for verbose output (output INFO and up), otherwise
+        we output WARNING and up.
+    @param log_stream is the stream (typically sys.stderr) whose log handler
+        we want to amend to match the requested verbosity.
+
+    If there isn't a handler for @c log_stream on the root logger, then we
+    don't do anything.
+    """
+    # Find the log handler for our stream (terminal) output
+    root_logger = logging.getLogger()
+    for handler in root_logger.handlers:
+        if handler.stream == log_stream:
+            break
+    else:
+        # This should never really happen - there should always be a handler
+        # for the terminal - but we might as well be safe.
+        handler = None
+
+    if handler:
+        # The default level, set up by vxlogging, for the stream output
+        # is DEBUG, which is not normally what we want
+        if verbose:
+            handler.setLevel(logging.INFO)
+        else:
+            handler.setLevel(logging.WARNING)
+
+def main(args):
+    """Do what the program does.
+        * parse the command line arguments
+        * process the epub files
+        * write cleaned epub files
+
+    @param args are the command line arguments, as a list.
+    """
+    source, destination, batch, verbosity = parse_arguments(args)
+
+    setup_terminal_verbosity(verbosity, LOG_STREAM)
+
+    logger.info('Done.')
+
+
 if __name__ == '__main__':
     SOURCE_PATH = sys.argv[1]
-    # does the given path exist?
+    # does the given path exist
     if os.path.exists(SOURCE_PATH):
-        # is this given path a file or directory?
+        # is this given path a file or directory
         if os.path.isdir(SOURCE_PATH):
             # batch process
             FILES_IN_DIRECTORY = os.listdir(SOURCE_PATH)

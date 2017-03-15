@@ -1,6 +1,7 @@
 """cleanepub.py"""
 
 # Standard Library
+from __future__ import print_function
 import zipfile
 import os
 import shutil
@@ -85,4 +86,20 @@ class CleanEPub(object):
 
 
 if __name__ == '__main__':
-    CleanEPub(sys.argv[1])
+    SOURCE_PATH = sys.argv[1]
+    # does the given path exist?
+    if os.path.exists(SOURCE_PATH):
+        # is this given path a file or directory?
+        if os.path.isdir(SOURCE_PATH):
+            # batch process
+            FILES_IN_DIRECTORY = os.listdir(SOURCE_PATH)
+            for path in FILES_IN_DIRECTORY:
+                FULL_PATH = os.path.abspath(os.path.join(SOURCE_PATH, path))
+                if os.path.isfile(FULL_PATH):
+                    print('processing %s' % FULL_PATH)
+                    CleanEPub(FULL_PATH)
+        elif os.path.isfile(SOURCE_PATH):
+            # single file
+            CleanEPub(SOURCE_PATH)
+        else:
+            print('%s is not a file / directory' % SOURCE_PATH)

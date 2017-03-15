@@ -1,8 +1,8 @@
 Remove unwanted span tags from epub files
 
-# Usage
+## Usage
 
-## cli
+### cli
 
 ```bash
 cleanepub.py --help

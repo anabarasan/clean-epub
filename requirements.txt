@@ -1,2 +1,6 @@
+# base requirements
 lxml
 beautifulsoup4
+
+# webapp requirements
+bottle

@@ -1,4 +1,8 @@
-"""cleanepub.py"""
+#!/usr/bin/env python
+"""
+cleanepub.py
+removes unwanted span tags from epub files
+"""
 
 # Standard Library
 from __future__ import print_function

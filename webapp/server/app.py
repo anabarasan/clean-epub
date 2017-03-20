@@ -10,7 +10,7 @@ server side for cleaning a epub file.
 import os
 
 # Bottle
-from bottle import Bottle, error, HTTPError, request, run
+from bottle import Bottle, error, HTTPError, request, response, run
 
 
 # File upload max size
@@ -26,14 +26,14 @@ def index():
     """returns hello world text for initial route"""
     return """
     <h1>Hello World</h1><br/>
-    <form action="/api/v1/upload" method="post" enctype="multipart/form-data">
+    <form action="/api/v1/clean" method="post" enctype="multipart/form-data">
         Select a file: <input type="file" name="upload" /><br/>
         <input type="submit" value="Start upload" />
     </form>
     """
 
 
-@app.route('/api/v1/upload', method='POST')
+@app.route('/api/v1/clean', method='POST')
 def get_epub():
     """get the user uploaded file and save to disk"""
     epub = request.files.get('upload')
@@ -57,6 +57,7 @@ def get_epub():
 
     data = ''.join(data_blocks)
     file(epub.filename, 'wb').write(data)
+    response.status = 202
     # @TODO start the conversion process and return 202 with queue location
 
 

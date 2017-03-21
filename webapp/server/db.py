@@ -8,12 +8,24 @@ import logging
 import os
 import sqlite3
 
-# app imports
-from app import APP_DB
-
-
 logger = logging.getLogger('app.db')
 
+APP_DB = 'data.sqlite3'
+
+
+def dict_factory(cursor, row):
+    """get results as dictionary from db"""
+    return dict((col[0], row[idx]) for idx, col in enumerate(cursor.description))
+
+def add_to_queue(item_name):
+    """ Add an item to queue"""
+    connection = sqlite3.connect(APP_DB)
+    cursor = connection.cursor()
+    cursor.execute('INSERT INTO queue (name) VALUES (?)', (item_name,))
+    queue_id = cursor.lastrowid
+    connection.commit()
+    connection.close()
+    return queue_id
 
 def setup():
     """Initial setup for the application.  Checks if the sqlite database file is present.

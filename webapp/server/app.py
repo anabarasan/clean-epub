@@ -14,9 +14,10 @@ import time
 # Bottle
 from bottle import Bottle, error, HTTPError, request, response, run
 
+# app import
+import db
 
 # configuration
-APP_DB = 'data.sqlite3'
 LOGLEVEL_CONSOLE = logging.INFO
 LOGLEVEL_FILE = logging.INFO
 
@@ -81,9 +82,11 @@ def get_epub():
 
     data = ''.join(data_blocks)
     unique_file_identifier = str(time.time() * 1000)
-    file('{0}_{1}'.format(unique_file_identifier, epub.filename), 'wb').write(data)
+    filename = '{0}_{1}'.format(unique_file_identifier, epub.filename)
+    file(filename, 'wb').write(data)
+    queue_id = db.add_to_queue(filename)
     response.status = 202
-    # @TODO start the conversion process and return queue location
+    response.header['Location'] = '/queue/{0}'.format(queue_id)
 
 
 if __name__ == '__main__':

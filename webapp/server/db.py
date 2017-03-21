@@ -27,6 +27,16 @@ def add_to_queue(item_name):
     connection.close()
     return queue_id
 
+def get_queue_item(queue_id):
+    """ Get a queue item from table"""
+    connection = sqlite3.connection(APP_DB)
+    connection.row_factory = dict_factory
+    cursor = connection.cursor()
+    cursor.execute("SELECT id, name, status FROM queue WHERE id = ?", (queue_id,))
+    resultset = cursor.fetchone()
+    connection.close()
+    return resultset
+
 def setup():
     """Initial setup for the application.  Checks if the sqlite database file is present.
     if not, create the database, and initialize the table structures

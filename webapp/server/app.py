@@ -7,6 +7,7 @@ server side for cleaning a epub file.
     repackage and deliver to user
 """
 # Standard Library
+import json
 import logging
 import os
 import time
@@ -86,7 +87,19 @@ def get_epub():
     file(filename, 'wb').write(data)
     queue_id = db.add_to_queue(filename)
     response.status = 202
-    response.header['Location'] = '/queue/{0}'.format(queue_id)
+    response.header['Location'] = '/api/v1/queue/{0}'.format(queue_id)
+
+
+@app.route('/api/v1/queue/<queue_id:int', method='GET')
+def get_queue_status(queue_id):
+    """get the status of the queue item"""
+    queue_item = db.get_queue_item(queue_id)
+    status = queue_item['status']
+    if status != 'Done':
+        return json.dumps({'status' : status})
+    else:
+        response.status = 303
+        response.header['Location'] = '/api/v1/cleaned/{0}'.format(queue_item['name'])
 
 
 if __name__ == '__main__':

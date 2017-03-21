@@ -7,10 +7,34 @@ server side for cleaning a epub file.
     repackage and deliver to user
 """
 # Standard Library
+import logging
 import os
+import time
 
 # Bottle
 from bottle import Bottle, error, HTTPError, request, response, run
+
+
+# configuration
+APP_DB = 'data.sqlite3'
+LOGLEVEL_CONSOLE = logging.INFO
+LOGLEVEL_FILE = logging.INFO
+
+
+# logger
+logger = logging.getLogger('app')
+logger.setLevel(logging.DEBUG)
+FORMATTER = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(message)s')
+# Console Logging
+CH = logging.StreamHandler()
+CH.setLevel(LOGLEVEL_CONSOLE)
+CH.setFormatter(FORMATTER)
+logger.addHandler(CH)
+# File Logging
+FH = logging.handlers.RotatingFileHandler('cleanepub.log', maxBytes=1024, backupCount=5)
+FH.setLevel(LOGLEVEL_FILE)
+FH.setFormatter(FORMATTER)
+logger.addHandler(FH)
 
 
 # File upload max size
@@ -56,9 +80,10 @@ def get_epub():
         buf = epub.file.read(BUF_SIZE)
 
     data = ''.join(data_blocks)
-    file(epub.filename, 'wb').write(data)
+    unique_file_identifier = str(time.time() * 1000)
+    file('{0}_{1}'.format(unique_file_identifier, epub.filename), 'wb').write(data)
     response.status = 202
-    # @TODO start the conversion process and return 202 with queue location
+    # @TODO start the conversion process and return queue location
 
 
 if __name__ == '__main__':

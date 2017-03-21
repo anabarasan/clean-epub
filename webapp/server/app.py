@@ -10,6 +10,7 @@ server side for cleaning a epub file.
 import json
 import logging
 import os
+import subprocess
 import time
 
 # Bottle
@@ -42,6 +43,12 @@ logger.addHandler(FH)
 # File upload max size
 MAX_SIZE = 10 * 1024 * 1024 # 10MB
 BUF_SIZE = 8192
+
+
+def cleanepub(source, destination):
+    """call the clean epub script and abandon the process"""
+    script = os.path.join(os.path.dirname(__file__), 'cleanepub.py')
+    subprocess.Popen([script, '--source', source, '--destination', destination])
 
 
 app = Bottle()
@@ -86,8 +93,9 @@ def get_epub():
     filename = '{0}_{1}'.format(unique_file_identifier, epub.filename)
     file(filename, 'wb').write(data)
     queue_id = db.add_to_queue(filename)
+    cleanepub(filename, '{0}{1}'.format(unique_file_identifier, epub.filename))
     response.status = 202
-    response.header['Location'] = '/api/v1/queue/{0}'.format(queue_id)
+    response.add_header('Location', '/api/v1/queue/{0}'.format(queue_id))
 
 
 @app.route('/api/v1/queue/<queue_id:int', method='GET')

@@ -29,13 +29,22 @@ def add_to_queue(item_name):
 
 def get_queue_item(queue_id):
     """ Get a queue item from table"""
-    connection = sqlite3.connection(APP_DB)
+    connection = sqlite3.connect(APP_DB)
     connection.row_factory = dict_factory
     cursor = connection.cursor()
     cursor.execute("SELECT id, name, status FROM queue WHERE id = ?", (queue_id,))
     resultset = cursor.fetchone()
     connection.close()
     return resultset
+
+def update_queue_item(queue_id, status):
+    """update a queue item"""
+    connection = sqlite3.connect(APP_DB)
+    cursor = connection.cursor()
+    cursor.execute('UPDATE queue (status) VALUES (?)', (status,))
+    connection.commit()
+    connection.close()
+    return get_queue_item(queue_id)
 
 def setup():
     """Initial setup for the application.  Checks if the sqlite database file is present.
